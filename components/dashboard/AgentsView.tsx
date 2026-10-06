@@ -25,6 +25,32 @@ export function AgentsView({
   const verify = run?.verify;
   const timeline = run?.timeline ?? meta?.timeline ?? [];
 
+  const secretGate = (verify?.checks ?? []).find((c: any) => c.name === "secrets");
+
+  const readiness = !verify
+    ? {
+        tone: "neutral",
+        title: "Awaiting Verification Completion",
+        detail: "Readiness is unproven until the verifier audit runs",
+      }
+    : verify.status === "approved"
+    ? {
+        tone: "success",
+        title: "Patch is Maintainer-Ready",
+        detail: "All verifier gates passed on the isolated workspace",
+      }
+    : verify.status === "blocked"
+    ? {
+        tone: "danger",
+        title: "Blocked — Do Not Ship",
+        detail: "Deterministic gates failed; builder cannot self-approve",
+      }
+    : {
+        tone: "danger",
+        title: "Needs Revision",
+        detail: "Verifier found deviations from the approved plan",
+      };
+
   return (
     <div className="grid lg:grid-cols-3 gap-3 h-full w-full">
       {/* Left Column: 2/3 - Main Agent Pipeline Stages */}
@@ -267,7 +293,7 @@ export function AgentsView({
               )}
             </div>
           }
-          subtitle="5-Gate independent security and quality validation"
+          subtitle={`${verify?.checks?.length ?? 5}-gate deterministic audit: scope, secrets, dependencies, tests, impact`}
         >
           {!verify ? (
             <div className="py-4 text-center text-slate-400">
@@ -336,8 +362,16 @@ export function AgentsView({
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 text-xs space-y-2 font-mono">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Verification Status:</span>
-                <span className={`font-bold ${verify?.status === "approved" ? "text-emerald-600" : "text-slate-700"}`}>
-                  {verify?.status ?? "Pending"}
+                <span
+                  className={`font-bold ${
+                    verify?.status === "approved"
+                      ? "text-emerald-600"
+                      : verify
+                      ? "text-rose-600"
+                      : "text-slate-500"
+                  }`}
+                >
+                  {verify?.status ?? "not run"}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -354,19 +388,37 @@ export function AgentsView({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Security / Secrets:</span>
-                <span className="text-emerald-600 font-semibold">Clean (0 violations)</span>
+                <span
+                  className={`font-semibold ${
+                    secretGate ? (secretGate.ok ? "text-emerald-600" : "text-rose-600") : "text-slate-400"
+                  }`}
+                >
+                  {secretGate ? (secretGate.ok ? "Clean" : "Violations") : "Not yet scanned"}
+                </span>
               </div>
             </div>
 
-            <div className="p-2.5 bg-emerald-50/60 rounded-xl border border-emerald-200/60 text-center">
-              <span className="text-[11px] font-bold text-emerald-900 block">
-                {verify?.status === "approved"
-                  ? "Patch is Maintainer-Ready"
-                  : "Awaiting Verification Completion"}
+            <div
+              className={`p-2.5 rounded-xl border text-center ${
+                readiness.tone === "success"
+                  ? "bg-emerald-50/60 border-emerald-200/60"
+                  : readiness.tone === "danger"
+                  ? "bg-rose-50/60 border-rose-200/60"
+                  : "bg-slate-50/80 border-slate-200/60"
+              }`}
+            >
+              <span
+                className={`text-[11px] font-bold block ${
+                  readiness.tone === "success"
+                    ? "text-emerald-900"
+                    : readiness.tone === "danger"
+                    ? "text-rose-900"
+                    : "text-slate-700"
+                }`}
+              >
+                {readiness.title}
               </span>
-              <span className="text-[10px] text-emerald-700 block mt-0.5 font-mono">
-                Isolated sandbox guarantees zero regressions
-              </span>
+              <span className="text-[10px] text-slate-600 block mt-0.5 font-mono">{readiness.detail}</span>
             </div>
           </div>
         </GlassCard>

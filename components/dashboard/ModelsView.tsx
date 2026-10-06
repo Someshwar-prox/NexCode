@@ -90,15 +90,25 @@ export function ModelsView({ meta, brain }: ModelsViewProps) {
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 text-xs font-mono space-y-1.5 text-slate-700">
             <div className="flex items-center justify-between">
               <span className="text-slate-500">Execution Mode:</span>
-              <span className="font-bold text-slate-900">{meta?.sandboxMode ?? "local-isolated"}</span>
+              <span className="font-bold text-slate-900">{meta?.sandboxMode ?? "local"}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Direct Push to Main:</span>
-              <span className="text-rose-600 font-bold">BLOCKED (Enforced)</span>
+              <span className="text-slate-500">Isolation Depth:</span>
+              <span className="font-bold text-slate-700">
+                {meta?.sandboxMode === "nebius" ? "Nebius Sandbox API" : "Local allow-listed runner"}
+              </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Secret Scanning:</span>
-              <span className="text-emerald-600 font-bold">ACTIVE</span>
+              <span className="text-slate-500">Allowed Commands:</span>
+              <span className="font-bold text-slate-700 font-mono">node, npm only</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500">Git Push Path:</span>
+              <span className="text-slate-700 font-bold">Not implemented (patch export only)</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500">Secret Scan Gate:</span>
+              <span className="text-slate-700 font-bold">Runs on verify</span>
             </div>
           </div>
         </GlassCard>
@@ -156,8 +166,10 @@ export function ModelsView({ meta, brain }: ModelsViewProps) {
                   <div className="grid sm:grid-cols-2 gap-2">
                     {Object.entries(brain.skills).map(([key, skill]: [string, any]) => (
                       <div key={key} className="p-2 bg-slate-50 rounded-lg border border-slate-200/40 text-xs">
-                        <span className="font-bold text-slate-800 block text-[11px]">{skill.name}</span>
-                        <p className="text-slate-500 text-[10px] mt-0.5 line-clamp-2">{skill.description}</p>
+                        <span className="font-bold text-slate-800 block text-[11px]">{skill.purpose}</span>
+                        <p className="text-slate-500 text-[10px] mt-0.5 line-clamp-2">
+                          {skill.rules?.slice(0, 2).join(" · ")}
+                        </p>
                       </div>
                     ))}
                   </div>

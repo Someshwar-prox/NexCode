@@ -6,3 +6,4 @@ data/store.json
 data/baseline.json
 .env.local
 *.log
+tsconfig.tsbuildinfo
