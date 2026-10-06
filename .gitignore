@@ -1,0 +1,8 @@
+node_modules/
+.next/
+out/
+data/workspace/
+data/store.json
+data/baseline.json
+.env.local
+*.log
